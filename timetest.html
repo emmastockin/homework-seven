@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+<head>
+    <meta charset="UTF-8">
+    <title>TrainTime</title>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <!-- Firebase Reference -->
+    <script src="https://www.gstatic.com/firebasejs/live/3.0/firebase.js"></script>
+    <!-- Moment.js Reference -->
+    <script src="https://cdn.jsdelivr.net/momentjs/2.12.0/moment.min.js"></script>
+</head>
+<script>
+var currentTime = moment(new Date());
+console.log("currentTime :", moment(currentTime).format("MM/DD/YYYY hh:mm"));
+
+var firstTrain = moment(currentTime).hour(6).minute(0);
+console.log(moment(firstTrain).format("MM/DD/YYYY hh:mm:ss"));
+
+var trainFrequency = 15
+var elapsedTime = moment(currentTime, "DD/MM/YYYY HH:mm:ss").diff(firstTrain, "DD/MM/YYYY HH:mm:ss")
+console.log(moment(elapsedTime).format("HH:mm"));
+
+function getWeatherData(loc) {
+    var prettyAddress;
+    var strLatLong;
+    var arrForcast;
+
+    //API Call to google Geocaching to get Lat/long
+    return $.getJSON("https://maps.googleapis.com/maps/api/geocode/json?address=" + encodeURIComponent(loc), function(response) {
+            prettyAddress = response.results[0].formatted_address
+            strLatLong = response.results[0].geometry.location.lat + "," + response.results[0].geometry.location.lng;
+        })
+        .then(function() {
+            return $.getJSON("https://api.wunderground.com/api/e57aa96ff1c09b96/forecast10day/q/" + encodeURIComponent(strLatLong) + ".json", function(response) {
+                arrForcast = response.forecast.simpleforecast.forecastday;
+            })
+            .then(function(data) {
+                return {
+                    prettyAddress: prettyAddress,
+                    arrForcast: arrForcast
+                };
+            });
+        });
+};
+
+getWeatherData('charlotte')
+    .then(function(weatherData) {
+        console.log(weatherData);
+    });
+</script>
+
+</html>
